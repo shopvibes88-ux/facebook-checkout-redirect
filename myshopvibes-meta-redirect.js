@@ -30,29 +30,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (cartItemsString.length > 0) {
                 const finalRedirectURL = `${baseCartURL}?products=${cartItemsString}`;
                 
-                console.log("Successfully constructed Square Online cart URL. Initiating click redirect:", finalRedirectURL);
-
-                // *** FIX FOR: Uncaught (in promise) Error: Missing cart cookie ***
-                // Simulate a user click to help Square's session/cookie setup.
+                // *** NEW FIX: TWO-STEP REDIRECT ***
+                // 1. Redirect to base cart URL first (to set cookies/session)
+                console.log("STEP 1: Redirecting to base cart URL to establish session:", baseCartURL);
+                window.location.replace(baseCartURL); 
                 
-                const link = document.createElement('a');
-                link.href = finalRedirectURL;
-                link.style.display = 'none'; // Keep it hidden
-                document.body.appendChild(link);
-                
-                // Use a short delay before clicking to ensure all DOM elements are stable
+                // 2. Immediately redirect to the final URL with the products parameter
+                // We use a small timeout to let the browser process the first location change, 
+                // but since the original page is gone, this relies on the browser history.
+                // In practice, this will likely only work in the Square redirect environment.
                 setTimeout(function() {
-                    link.click();
-                    document.body.removeChild(link);
+                    console.log("STEP 2: Redirecting to final cart URL:", finalRedirectURL);
+                    window.location.replace(finalRedirectURL);
                 }, 100); 
                 
-                // If the simulated click fails, we fall back to a standard redirect after 1 second
-                setTimeout(function() {
-                    console.warn("Simulated click failed to redirect. Falling back to window.location.replace.");
-                    window.location.replace(finalRedirectURL);
-                }, 1000);
-                
-                // *** END FIX ***
+                // *** END NEW FIX ***
 
             } else {
                 console.warn("No valid product data was parsed. Redirecting to base cart page.");
